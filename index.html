@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>主管訓筆試互動刷題器</title>
+<style>
+:root{
+  --bg:#F2F5F8;
+  --panel:#FFFFFF;
+  --panel-alt:#E9EEF2;
+  --text:#16212E;
+  --muted:#5B6B7A;
+  --blue:#1F4E79;
+  --blue-soft:#DCE6EE;
+  --red:#B03A2E;
+  --red-soft:#F4DED9;
+  --green:#1B7A5E;
+  --green-soft:#DCEEE6;
+  --amber:#A96C16;
+  --amber-soft:#F1E4CC;
+  --border:#C9D2DB;
+  --border-strong:#1F4E79;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#121A22;
+    --panel:#1B2530;
+    --panel-alt:#22303C;
+    --text:#E8EEF3;
+    --muted:#9FB0C0;
+    --blue:#8FBBE0;
+    --blue-soft:#243444;
+    --red:#E28A76;
+    --red-soft:#3A2620;
+    --green:#5FD9AE;
+    --green-soft:#1C3830;
+    --amber:#E0B15C;
+    --border:#3A4956;
+    --border-strong:#8FBBE0;
+  }
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  line-height:1.6;
+  padding:0 0 3em;
+}
+h1,h2,h3{
+  font-family:"Noto Serif TC",serif;
+  color:var(--blue);
+  margin:0 0 .4em;
+}
+button{
+  font-family:inherit;
+  cursor:pointer;
+}
+textarea, input[type=text]{
+  font-family:inherit;
+  color:var(--text);
+  background:var(--panel);
+  border:1px solid var(--border);
+}
+.wrap{max-width:900px;margin:0 auto;padding:0 1em;}
+
+/* masthead */
+.masthead{
+  background:var(--blue);
+  color:#F2F5F8;
+  padding:1.4em 1em 1.6em;
+  border-bottom:4px double var(--red);
+}
+.masthead .wrap{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:.8em;}
+.masthead h1{color:#F6F8FA;font-size:1.5em;margin:0;}
+.masthead .subtitle{margin:.3em 0 0;font-size:.85em;color:#D7E3EC;}
+.masthead-actions button{
+  background:transparent;border:1px solid #D7E3EC;color:#F2F5F8;
+  padding:.5em .9em;border-radius:2px;font-size:.85em;
+}
+.masthead-actions button:hover{background:rgba(255,255,255,.12);}
+
+main.view{padding-top:1.4em;}
+
+/* seal */
+.seal{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:1.7em;height:1.7em;border:2px solid var(--red);color:var(--red);
+  border-radius:50%;font-weight:700;font-family:"Noto Serif TC",serif;
+  font-size:1em;margin-right:.4em;flex:none;
+}
+
+.panel{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:2px;
+  padding:1.1em 1.2em 1.3em;
+  margin:0 0 1.4em;
+}
+.panel > h2{
+  display:flex;align-items:center;font-size:1.15em;
+  border-bottom:1px solid var(--border);padding-bottom:.5em;margin-bottom:.9em;
+}
+
+.module-grid, .sheet-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:.9em;
+}
+@media (max-width:600px){
+  .module-grid, .sheet-grid{grid-template-columns:1fr;}
+}
+.mod-card, .sheet-card{
+  border:1px solid var(--border);background:var(--panel-alt);
+  padding:.9em 1em;border-radius:2px;
+}
+.mod-head, .sheet-head{display:flex;align-items:center;margin-bottom:.4em;}
+.mod-head h3, .sheet-head h3{margin:0;font-size:1.02em;color:var(--text);}
+.mod-meta{font-size:.85em;color:var(--muted);margin:.15em 0;}
+.mod-meta.warn{color:var(--amber);}
+.mod-actions{margin-top:.7em;display:flex;gap:.5em;flex-wrap:wrap;}
+
+.btn{
+  border:1px solid var(--blue);background:var(--panel);color:var(--blue);
+  padding:.45em .8em;border-radius:2px;font-size:.9em;
+}
+.btn:hover:not(:disabled){background:var(--blue-soft);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn.primary{background:var(--blue);color:#fff;}
+.btn.primary:hover{opacity:.9;}
+.btn.danger{border-color:var(--red);color:var(--red);}
+.btn.danger:hover{background:var(--red-soft);}
+
+/* reference tables */
+table.refTable{width:100%;border-collapse:collapse;margin:.6em 0 1.1em;font-size:.92em;}
+.refTable th, .refTable td{border:1px solid var(--border-strong);padding:.5em .6em;text-align:left;vertical-align:top;}
+.refTable th{background:var(--blue-soft);color:var(--blue);font-family:"Noto Serif TC",serif;}
+.refTable .hi{color:var(--blue);font-weight:700;}
+.ref-block h3{font-size:1em;border-left:4px solid var(--red);padding-left:.5em;margin:1.1em 0 .3em;}
+.ref-block p{margin:.3em 0;font-size:.92em;color:var(--muted);}
+@media (max-width:480px){
+  .refTable, .refTable thead, .refTable tbody, .refTable tr, .refTable th, .refTable td{display:block;width:100%;}
+  .refTable thead{display:none;}
+  .refTable tr{border:1px solid var(--border-strong);border-radius:2px;padding:.3em .5em;margin-bottom:.6em;}
+  .refTable td{border:none;border-bottom:1px solid var(--border);padding:.35em .1em;}
+  .refTable td:last-child{border-bottom:none;}
+  .refTable td::before{content:attr(data-th) "：";font-weight:700;color:var(--blue);display:block;}
+}
+
+/* quiz */
+.quiz-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6em;font-size:.85em;color:var(--muted);}
+.quiz-top .back{color:var(--blue);border:none;background:none;text-decoration:underline;padding:0;font-size:.95em;}
+.quiz-q{font-size:1.05em;margin:.4em 0 1em;white-space:pre-wrap;}
+.quiz-q .tag{display:inline-block;font-size:.72em;color:var(--amber);border:1px solid var(--amber);padding:.05em .5em;border-radius:2px;margin-right:.5em;vertical-align:middle;}
+
+.choice-list{display:flex;flex-direction:column;gap:.5em;}
+.choice-btn{
+  text-align:left;padding:.6em .8em;border:1px solid var(--border);border-radius:2px;
+  background:var(--panel);color:var(--text);font-size:.98em;
+}
+.choice-btn:hover:not(:disabled){border-color:var(--blue);}
+.choice-btn.sel{border-color:var(--blue);background:var(--blue-soft);}
+.choice-btn.correct{border-color:var(--green);background:var(--green-soft);color:var(--green);}
+.choice-btn.incorrect{border-color:var(--red);background:var(--red-soft);color:var(--red);}
+.choice-btn:disabled{cursor:default;}
+
+.order-slots{display:flex;flex-wrap:wrap;gap:.5em;margin-bottom:.8em;}
+.order-slot{
+  padding:.5em .7em;border:1px dashed var(--border);border-radius:2px;font-size:.9em;min-width:6em;
+  background:var(--panel-alt);color:var(--muted);
+}
+.order-slot.filled{border-style:solid;background:var(--panel);color:var(--text);}
+.order-slot.correct{border-color:var(--green);color:var(--green);background:var(--green-soft);}
+.order-slot.incorrect{border-color:var(--red);color:var(--red);background:var(--red-soft);}
+.order-bank{display:flex;flex-wrap:wrap;gap:.5em;padding-top:.7em;border-top:1px solid var(--border);}
+.order-item{padding:.5em .7em;border:1px solid var(--blue);border-radius:2px;background:var(--panel);color:var(--blue);font-size:.9em;}
+.order-item:disabled{opacity:.35;}
+
+.match-wrap{display:flex;gap:1em;}
+.match-col{flex:1;display:flex;flex-direction:column;gap:.5em;}
+@media (max-width:480px){.match-wrap{gap:.6em;}}
+.match-btn{padding:.55em .7em;border:1px solid var(--border);border-radius:2px;background:var(--panel);color:var(--text);font-size:.9em;text-align:left;}
+.match-btn.active{border-color:var(--blue);background:var(--blue-soft);}
+.match-btn.matched{border-color:var(--amber);background:var(--amber-soft);color:var(--amber);}
+.match-btn.correct{border-color:var(--green)!important;background:var(--green-soft)!important;color:var(--green)!important;}
+.match-btn.incorrect{border-color:var(--red)!important;background:var(--red-soft)!important;color:var(--red)!important;}
+
+.fill-input{width:100%;padding:.6em .7em;border-radius:2px;font-size:.98em;}
+.fill-input.correct{border-color:var(--green);}
+.fill-input.incorrect{border-color:var(--red);}
+
+.quiz-explain{margin-top:1em;padding:.8em 1em;border-radius:2px;border:1px solid var(--border);font-size:.92em;}
+.quiz-explain.ok{border-color:var(--green);background:var(--green-soft);}
+.quiz-explain.no{border-color:var(--red);background:var(--red-soft);}
+.quiz-explain .verdict{font-weight:700;margin-bottom:.3em;}
+.quiz-explain.ok .verdict{color:var(--green);}
+.quiz-explain.no .verdict{color:var(--red);}
+.quiz-explain .ans-line{margin:.25em 0;}
+.quiz-explain .src{font-size:.85em;color:var(--muted);margin-top:.4em;}
+
+.quiz-actions{margin-top:1.2em;display:flex;gap:.6em;}
+
+/* result */
+.score-big{font-size:2em;color:var(--blue);font-family:"Noto Serif TC",serif;margin:.2em 0;}
+.wrong-list{list-style:none;margin:.6em 0;padding:0;}
+.wrong-list li{padding:.5em .2em;border-bottom:1px solid var(--border);font-size:.92em;}
+
+/* exam sheet */
+.sheet-case{background:var(--amber-soft);border-left:4px solid var(--amber);padding:.8em 1em;margin-bottom:1em;font-size:.95em;}
+.field-row{display:flex;flex-wrap:wrap;gap:.6em;margin-bottom:.9em;}
+.field-row label{flex:1 1 200px;font-size:.88em;color:var(--muted);display:flex;flex-direction:column;gap:.3em;}
+.field-row input[type=text]{padding:.5em .6em;border-radius:2px;}
+.form-block{margin-bottom:1em;}
+.form-block > .label{font-weight:700;color:var(--blue);font-size:.92em;margin-bottom:.3em;}
+.form-block .hint{font-size:.8em;color:var(--muted);margin-bottom:.35em;}
+.form-block textarea{width:100%;padding:.6em .7em;border-radius:2px;font-size:.95em;min-height:5em;resize:vertical;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9em;}
+@media (max-width:600px){.form-grid{grid-template-columns:1fr;}}
+.checklist{list-style:none;margin:0;padding:0;}
+.checklist li{display:flex;gap:.6em;align-items:flex-start;padding:.45em .2em;border-bottom:1px solid var(--border);font-size:.92em;}
+.checklist input{margin-top:.25em;}
+.check-stat{font-size:.9em;color:var(--blue);margin:.6em 0;font-weight:700;}
+</style>
+</head>
+<body>
+<div class="masthead">
+  <div class="wrap">
+    <div>
+      <h1>主管訓筆試互動刷題器</h1>
+      <p class="subtitle">目標設定與工作計劃表・授權事前準備表・溝通協調・教練教導・授權後　－　架構默寫與情境辨識練習</p>
+    </div>
+    <div class="masthead-actions">
+      <button id="btn-reset" type="button">重設進度</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<main id="view-home" class="view">
+  <section class="panel">
+    <h2><span class="seal">練</span>六大模組</h2>
+    <div class="module-grid" id="module-grid"></div>
+  </section>
+
+  <section class="panel">
+    <h2><span class="seal">卷</span>模擬筆試（三張單）</h2>
+    <div class="sheet-grid" id="sheet-grid"></div>
+  </section>
+
+  <section class="panel">
+    <h2><span class="seal">典</span>教材速查</h2>
+    <div id="reference"></div>
+  </section>
+</main>
+
+<main id="view-quiz" class="view" hidden>
+  <section class="panel">
+    <div class="quiz-top">
+      <button class="back" type="button" id="quiz-back">← 返回首頁</button>
+      <span id="quiz-progress"></span>
+    </div>
+    <div class="quiz-q" id="quiz-question-text"></div>
+    <div id="quiz-question-body"></div>
+    <div class="quiz-explain" id="quiz-explain" hidden></div>
+    <div class="quiz-actions">
+      <button class="btn primary" id="quiz-submit" type="button">送出答案</button>
+      <button class="btn primary" id="quiz-next" type="button" hidden>下一題</button>
+    </div>
+  </section>
+</main>
+
+<main id="view-result" class="view" hidden>
+  <section class="panel">
+    <h2><span class="seal">果</span>本次成績</h2>
+    <div class="score-big" id="result-score"></div>
+    <div id="result-wrongwrap"></div>
+    <div class="quiz-actions">
+      <button class="btn primary" id="result-retry-wrong" type="button">只重刷錯的</button>
+      <button class="btn" id="result-retry-all" type="button">整個模組再刷一次</button>
+      <button class="btn" id="result-home" type="button">返回首頁</button>
+    </div>
+  </section>
+</main>
+
+<main id="view-sheet" class="view" hidden>
+  <section class="panel">
+    <div class="quiz-top">
+      <button class="back" type="button" id="sheet-back">← 返回首頁</button>
+      <span></span>
+    </div>
+    <div id="sheet-body"></div>
+  </section>
+</main>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- storage ---------- */
+var STORAGE_KEY = "sgxt_progress_v1";
+var DRAFT_KEY = "sgxt_drafts_v1";
+
+function loadJSON(key, fallback){
+  try{
+    var raw = localStorage.getItem(key);
+    if(!raw) return fallback;
+    var data = JSON.parse(raw);
+    return data && typeof data === "object" ? data : fallback;
+  }catch(e){ return fallback; }
+}
+function saveJSON(key, data){
+  try{ localStorage.setItem(key, JSON.stringify(data)); }catch(e){ /* ignore */ }
+}
+
+var progress = loadJSON(STORAGE_KEY, {everCorrect:{}, wrong:{}});
+if(!progress.everCorrect) progress.everCorrect = {};
+if(!progress.wrong) progress.wrong = {};
+function saveProgress(){ saveJSON(STORAGE_KEY, progress); }
+
+var drafts = loadJSON(DRAFT_KEY, {});
+function saveDrafts(){ saveJSON(DRAFT_KEY, drafts); }
+
+/* ---------- fill-in normalize ---------- */
+function normalizeFill(s){
+  return (s || "").toString().trim().toLowerCase()
+    .replace(/[\s　，。、；：！？.,;:!?()（）「」『』\-—_\/\\／·~`'"“”‘’&＆]/g, "");
+}
+function checkFill(q, val){
+  var norm = normalizeFill(val);
+  if(!norm) return false;
+  var pool = [q.answer].concat(q.alt || []).map(normalizeFill);
+  return pool.indexOf(norm) !== -1;
+}
+
+/* ============================================================
+   題庫
+   ============================================================ */
+var M1 = [
+ {id:"m1-1", type:"single", tag:"默寫",
+  q:"溝通協調思考階梯第一階「Position」的中文名稱是？",
+  choices:["明白自己的位置","同理心思考","訊息的價值","互動的過程"], answer:0,
+  explain:"思考階梯第一階為 Position（明白自己的位置），要先釐清自己的角色與期望溝通後的結果，再往下一階走。", src:"溝通協調思考階梯"},
+ {id:"m1-2", type:"single", tag:"默寫",
+  q:"思考階梯第二階「Empathy」的中文名稱是？",
+  choices:["訊息的價值","同理心思考","明白自己的位置","互動的過程"], answer:1,
+  explain:"Empathy＝同理心思考，重點是先想清楚溝通對象、對方擔心及在意的事、對方的期望。", src:"溝通協調思考階梯"},
+ {id:"m1-3", type:"single", tag:"默寫",
+  q:"思考階梯第三階「Values」的中文名稱是？",
+  choices:["互動的過程","明白自己的位置","訊息的價值","同理心思考"], answer:2,
+  explain:"Values＝訊息的價值，要整理出這次溝通的重點與內容，不能想到什麼講什麼。", src:"溝通協調思考階梯"},
+ {id:"m1-4", type:"single", tag:"默寫",
+  q:"思考階梯第四階「Interaction」的中文名稱是？",
+  choices:["互動的過程","訊息的價值","同理心思考","明白自己的位置"], answer:0,
+  explain:"Interaction＝互動的過程，實際溝通時要善用同理心溝通、詢問、邀請與引導。", src:"溝通協調思考階梯"},
+ {id:"m1-5", type:"order", tag:"排序",
+  q:"請依溝通協調思考階梯，由第一階到第四階依序排列。",
+  items:["Values 訊息的價值","Position 明白自己的位置","Interaction 互動的過程","Empathy 同理心思考"],
+  answer:[1,3,0,2],
+  explain:"正確順序為：Position 明白自己的位置 → Empathy 同理心思考 → Values 訊息的價值 → Interaction 互動的過程。先定位自己，再理解對方，才能決定訊息重點與互動方式。", src:"溝通協調思考階梯"},
+ {id:"m1-6", type:"match", tag:"配對",
+  q:"請將思考階梯各階與其「關鍵問題」配對。",
+  left:["Position 明白自己的位置","Empathy 同理心思考","Values 訊息的價值","Interaction 互動的過程"],
+  right:["溝通重點／內容","我的角色／期望溝通後的結果","善用同理心溝通／詢問、邀請與引導","溝通對象／對方擔心及在意／對方期望"],
+  answer:{"0":1,"1":3,"2":0,"3":2},
+  explain:"Position 對應「我的角色／期望溝通後的結果」；Empathy 對應「溝通對象／對方擔心及在意／對方期望」；Values 對應「溝通重點／內容」；Interaction 對應「善用同理心溝通／詢問、邀請與引導」。", src:"溝通協調思考階梯"},
+ {id:"m1-7", type:"fill", tag:"默寫",
+  q:"請默寫思考階梯「Position」階段的關鍵問題（逐項寫出）。",
+  answer:"我的角色／期望溝通後的結果",
+  alt:["我的角色/期望溝通後的結果","期望溝通後的結果／我的角色","我的角色、期望溝通後的結果"],
+  explain:"Position 階段要先問自己：我的角色是什麼？期望溝通後達成什麼結果？", src:"溝通協調思考階梯"},
+ {id:"m1-8", type:"fill", tag:"默寫",
+  q:"請默寫思考階梯「Empathy」階段的關鍵問題（逐項寫出）。",
+  answer:"溝通對象／對方擔心及在意／對方期望",
+  alt:["溝通對象/對方擔心及在意/對方期望","溝通對象、對方擔心及在意、對方期望"],
+  explain:"Empathy 階段要想清楚溝通對象是誰、對方擔心及在意什麼、對方的期望是什麼。", src:"溝通協調思考階梯"},
+ {id:"m1-9", type:"fill", tag:"默寫",
+  q:"請默寫思考階梯「Values」階段的關鍵問題（逐項寫出）。",
+  answer:"溝通重點／內容", alt:["溝通重點/內容","溝通重點、內容"],
+  explain:"Values 階段的關鍵問題就是這次溝通的重點與內容。", src:"溝通協調思考階梯"},
+ {id:"m1-10", type:"fill", tag:"默寫",
+  q:"請默寫思考階梯「Interaction」階段的關鍵問題（逐項寫出）。",
+  answer:"善用同理心溝通／詢問、邀請與引導",
+  alt:["善用同理心溝通/詢問、邀請與引導","善用同理心溝通、詢問、邀請與引導"],
+  explain:"Interaction 階段強調善用同理心溝通，並透過詢問、邀請與引導來互動。", src:"溝通協調思考階梯"},
+ {id:"m1-11", type:"multi", tag:"複選",
+  q:"下列哪些是口試「溝通協調」的注意事項？（可複選）",
+  choices:["傾聽","邀請分享","確認彼此認知","三明治法則","一開口就直接下結論","打斷對方發言以節省時間"],
+  answer:[0,1,2,3],
+  explain:"口試溝通協調注意事項為：傾聽、邀請分享、確認彼此認知、三明治法則。直接下結論、打斷對方都不是建議做法。", src:"溝通協調（口試注意事項）"},
+ {id:"m1-12", type:"single", tag:"情境",
+  q:"情境：報表交接給一位印尼組員之前，你先思考「這位組員可能會擔心什麼、在意什麼、希望我怎麼處理」——這最貼近思考階梯的哪一階段？",
+  choices:["Position 明白自己的位置","Empathy 同理心思考","Values 訊息的價值","Interaction 互動的過程"], answer:1,
+  explain:"先設身處地思考對方的擔心、在意與期望，屬於 Empathy 同理心思考階段，之後才進入訊息重點（Values）與實際互動（Interaction）。", src:"溝通協調思考階梯（情境應用）"}
+];
+
+var M2 = [
+ {id:"m2-1", type:"order", tag:"排序",
+  q:"請依同仁輔導紀錄表，將五個步驟依序排列。",
+  items:["給予明確的訊息","訂出下次教導時間與主題","建立和緩的氣氛","達成共識並確認結果（找方法）","澄清並確認事實（找原因）"],
+  answer:[2,0,4,3,1],
+  explain:"正確順序：一、建立和緩的氣氛 → 二、給予明確的訊息 → 三、澄清並確認事實（找原因） → 四、達成共識並確認結果（找方法） → 五、訂出下次教導時間與主題。", src:"同仁輔導紀錄表"},
+ {id:"m2-2", type:"match", tag:"配對",
+  q:"請將輔導紀錄表五步驟與右側藍字提示配對。",
+  left:["一、建立和緩的氣氛","二、給予明確的訊息","三、澄清並確認事實（找原因）","四、達成共識並確認結果（找方法）","五、訂出下次教導時間與主題"],
+  right:["讓對方自己提出解決方案／表達具體支持","下次面談時間＆主題","提供問題事實","先聊近況、給予關心與讚美","讓對方主動先說，盡可能收集資訊"],
+  answer:{"0":3,"1":2,"2":4,"3":0,"4":1},
+  explain:"一對應「先聊近況、給予關心與讚美」；二對應「提供問題事實」；三對應「讓對方主動先說，盡可能收集資訊」；四對應「讓對方自己提出解決方案／表達具體支持」；五對應「下次面談時間＆主題」。", src:"同仁輔導紀錄表"},
+ {id:"m2-3", type:"single", tag:"默寫",
+  q:"步驟三「澄清並確認事實」主要是在找什麼？",
+  choices:["方法","原因","資源","時間"], answer:1,
+  explain:"步驟三括號註明「找原因」，重點是讓對方主動先說，盡可能收集資訊以釐清事實。", src:"同仁輔導紀錄表"},
+ {id:"m2-4", type:"single", tag:"默寫",
+  q:"步驟四「達成共識並確認結果」主要是在找什麼？",
+  choices:["原因","方法","氣氛","主題"], answer:1,
+  explain:"步驟四括號註明「找方法」，重點是讓對方自己提出解決方案，並表達具體支持。", src:"同仁輔導紀錄表"},
+ {id:"m2-5", type:"fill", tag:"默寫",
+  q:"請默寫步驟一「建立和緩的氣氛」的藍字提示。",
+  answer:"先聊近況、給予關心與讚美", alt:["先聊近況，給予關心與讚美","先聊近況給予關心與讚美"],
+  explain:"藍字提示：先聊近況、給予關心與讚美，讓對方放鬆再進入正題。", src:"同仁輔導紀錄表"},
+ {id:"m2-6", type:"fill", tag:"默寫",
+  q:"請默寫步驟二「給予明確的訊息」的藍字提示。",
+  answer:"提供問題事實", explain:"藍字提示：提供問題事實，讓對方清楚知道發生了什麼事。", src:"同仁輔導紀錄表"},
+ {id:"m2-7", type:"fill", tag:"默寫",
+  q:"請默寫步驟三「澄清並確認事實（找原因）」的藍字提示。",
+  answer:"讓對方主動先說，盡可能收集資訊",
+  alt:["讓對方主動先說盡可能收集資訊","讓對方主動先說、盡可能收集資訊"],
+  explain:"藍字提示：讓對方主動先說，盡可能收集資訊，而不是主管先下判斷。", src:"同仁輔導紀錄表"},
+ {id:"m2-8", type:"fill", tag:"默寫",
+  q:"請默寫步驟四「達成共識並確認結果（找方法）」的藍字提示（兩項都要寫）。",
+  answer:"讓對方自己提出解決方案／表達具體支持",
+  alt:["讓對方自己提出解決方案/表達具體支持","讓對方自己提出解決方案，表達具體支持","讓對方自己提出解決方案、表達具體支持"],
+  explain:"藍字提示有兩項：讓對方自己提出解決方案、表達具體支持，缺一項都算沒寫完整。", src:"同仁輔導紀錄表"},
+ {id:"m2-9", type:"fill", tag:"默寫",
+  q:"請默寫步驟五「訂出下次教導時間與主題」的藍字提示。",
+  answer:"下次面談時間＆主題", alt:["下次面談時間&主題","下次面談時間與主題","下次面談時間和主題"],
+  explain:"藍字提示：下次面談時間＆主題，確保有後續追蹤。", src:"同仁輔導紀錄表"},
+ {id:"m2-10", type:"multi", tag:"複選",
+  q:"下列哪些是口試「同仁輔導」的注意事項？（可複選）",
+  choices:["傾聽","邀請分享","確認彼此認知","三明治法則","確認下次會談時間","同理心","對事不對人","不管對方感受，直接給答案"],
+  answer:[0,1,2,3,4,5,6],
+  explain:"口試同仁輔導注意事項為：傾聽、邀請分享、確認彼此認知、三明治法則、確認下次會談時間、同理心、對事不對人。不管對方感受直接給答案並非建議做法。", src:"同仁輔導（口試注意事項）"},
+ {id:"m2-11", type:"single", tag:"情境",
+  q:"情境：你請剛接手報表的新人先說說自己遇到的困難和想法，盡量讓他多講——這最貼近哪一個步驟？",
+  choices:["步驟一 建立和緩的氣氛","步驟二 給予明確的訊息","步驟三 澄清並確認事實","步驟四 達成共識並確認結果"], answer:2,
+  explain:"讓對方主動先說、盡可能收集資訊，正是步驟三「澄清並確認事實（找原因）」的做法。", src:"同仁輔導紀錄表（情境應用）"},
+ {id:"m2-12", type:"single", tag:"默寫",
+  q:"步驟五「訂出下次教導時間與主題」最主要的目的是？",
+  choices:["結束對話就好，不用再談","確保後續追蹤與持續教導","作為考核處罰依據","純粹記錄用，沒有實際意義"], answer:1,
+  explain:"訂出下次教導時間與主題，是為了確保後續追蹤與持續教導，讓輔導不是單次事件。", src:"同仁輔導紀錄表"}
+];
+
+var M3 = [
+ {id:"m3-1", type:"match", tag:"配對",
+  q:"請將 SMART 字母與其英文配對。",
+  left:["S","M","A","R","T"],
+  right:["Time-bound","Specific","Relevant","Measurable","Achievable"],
+  answer:{"0":1,"1":3,"2":4,"3":2,"4":0},
+  explain:"S=Specific、M=Measurable、A=Achievable、R=Relevant、T=Time-bound。", src:"SMART 五要素"},
+ {id:"m3-2", type:"match", tag:"配對",
+  q:"請將 SMART 字母與其中文配對。",
+  left:["S","M","A","R","T"],
+  right:["有時限","明確具體","相關性","可衡量","可達成"],
+  answer:{"0":1,"1":3,"2":4,"3":2,"4":0},
+  explain:"S=明確具體、M=可衡量、A=可達成、R=相關性、T=有時限。", src:"SMART 五要素"},
+ {id:"m3-3", type:"fill", tag:"默寫",
+  q:"請默寫 S（Specific 明確具體）的自我檢查問句。",
+  answer:"要做什麼？對象是誰？改善哪一件事？",
+  alt:["要做什麼?對象是誰?改善哪一件事?","要做什麼、對象是誰、改善哪一件事"],
+  explain:"S 的自我檢查問句：要做什麼？對象是誰？改善哪一件事？", src:"SMART 五要素"},
+ {id:"m3-4", type:"fill", tag:"默寫",
+  q:"請默寫 M（Measurable 可衡量）的自我檢查問句。",
+  answer:"用什麼數字或指標判斷有沒有做到？",
+  alt:["用什麼數字或指標判斷有沒有做到"],
+  explain:"M 的自我檢查問句：用什麼數字或指標判斷有沒有做到？", src:"SMART 五要素"},
+ {id:"m3-5", type:"fill", tag:"默寫",
+  q:"請默寫 A（Achievable 可達成）的自我檢查問句。",
+  answer:"以現有資源、人力與時間，這個標準做得到嗎？",
+  alt:["以現有資源人力與時間這個標準做得到嗎","以現有資源、人力與時間這個標準做得到嗎"],
+  explain:"A 的自我檢查問句：以現有資源、人力與時間，這個標準做得到嗎？", src:"SMART 五要素"},
+ {id:"m3-6", type:"fill", tag:"默寫",
+  q:"請默寫 R（Relevant 相關性）的自我檢查問句。",
+  answer:"和部門／公司的組織目的方向一致嗎？",
+  alt:["和部門/公司的組織目的方向一致嗎","和部門、公司的組織目的方向一致嗎"],
+  explain:"R 的自我檢查問句：和部門／公司的組織目的方向一致嗎？", src:"SMART 五要素"},
+ {id:"m3-7", type:"fill", tag:"默寫",
+  q:"請默寫 T（Time-bound 有時限）的自我檢查問句。",
+  answer:"哪一天完成？中間有沒有階段時點？",
+  alt:["哪一天完成中間有沒有階段時點"],
+  explain:"T 的自我檢查問句：哪一天完成？中間有沒有階段時點？", src:"SMART 五要素"},
+ {id:"m3-8", type:"order", tag:"排序",
+  q:"請依 SMART 的字母順序排列下列項目。",
+  items:["Achievable 可達成","Specific 明確具體","Time-bound 有時限","Relevant 相關性","Measurable 可衡量"],
+  answer:[1,4,0,3,2],
+  explain:"SMART 依序為 Specific、Measurable、Achievable、Relevant、Time-bound。", src:"SMART 五要素"},
+ {id:"m3-9", type:"multi", tag:"情境",
+  q:"情境：「請企劃部同仁想辦法拉高 Gaple 的付費率，這與提升營收的部門方向一致，現有人力與預算也做得到。」這句目標敘述缺了 SMART 的哪些要素？（可複選）",
+  choices:["S 明確具體","M 可衡量","A 可達成","R 相關性","T 有時限"],
+  answer:[1,4],
+  explain:"敘述已寫出對象與行動（S）、與部門方向一致（R）、資源人力足夠（A），但沒有具體的數字或指標（M），也沒有完成期限（T），所以缺 M、T。", src:"SMART 五要素（情境應用）"},
+ {id:"m3-10", type:"multi", tag:"情境",
+  q:"情境：「在兩週內把這件事做完，達成率抓在 95% 以上，同仁現有能力絕對沒問題。」這句敘述缺了 SMART 的哪些要素？（可複選）",
+  choices:["S 明確具體","M 可衡量","A 可達成","R 相關性","T 有時限"],
+  answer:[0,3],
+  explain:"敘述已有時限（兩週內＝T）、有數字指標（95%＝M）、有能力評估（A），但完全沒說「這件事」具體是什麼、對象是誰（缺 S），也沒有提到是否與部門或公司目的一致（缺 R）。", src:"SMART 五要素（情境應用）"},
+ {id:"m3-11", type:"single", tag:"辨識",
+  q:"下列哪一句最符合 Achievable（可達成）的自我檢查問句？",
+  choices:["要做什麼？對象是誰？改善哪一件事？","哪一天完成？中間有沒有階段時點？","以現有資源、人力與時間，這個標準做得到嗎？","和部門／公司的組織目的方向一致嗎？"], answer:2,
+  explain:"Achievable 的自我檢查問句是：以現有資源、人力與時間，這個標準做得到嗎？", src:"SMART 五要素"}
+];
+
+var M4 = [
+ {id:"m4-1", type:"match", tag:"配對",
+  q:"請將 PDCA 字母與其中文名稱配對。",
+  left:["P","D","C","A"], right:["查核","執行","計劃","行動改善"],
+  answer:{"0":2,"1":1,"2":0,"3":3},
+  explain:"P=計劃、D=執行、C=查核、A=行動改善。", src:"PDCA"},
+ {id:"m4-2", type:"fill", tag:"默寫",
+  q:"請默寫 PDCA 中「P 計劃」包含的內容。",
+  answer:"訂目標、分析現況、擬定方法與資源",
+  alt:["訂目標分析現況擬定方法與資源","訂目標、分析現況、擬定方法和資源"],
+  explain:"P Plan 計劃：訂目標、分析現況、擬定方法與資源。", src:"PDCA"},
+ {id:"m4-3", type:"fill", tag:"默寫",
+  q:"請默寫 PDCA 中「C 查核」的重點。",
+  answer:"對照階段目標與檢核點",
+  explain:"C Check 查核：對照階段目標與檢核點，確認進度是否如期如質。", src:"PDCA"},
+ {id:"m4-4", type:"fill", tag:"默寫",
+  q:"請默寫 PDCA 中「A 行動改善」的重點。",
+  answer:"依落差調整、標準化、納入下一循環",
+  alt:["依落差調整標準化納入下一循環"],
+  explain:"A Act 行動改善：依落差調整、標準化、納入下一循環。", src:"PDCA"},
+ {id:"m4-5", type:"order", tag:"排序",
+  q:"請依 PDCA 循環順序排列。",
+  items:["Do 執行","Act 行動改善","Plan 計劃","Check 查核"],
+  answer:[2,0,3,1],
+  explain:"PDCA 循環順序為 Plan → Do → Check → Act。", src:"PDCA"},
+ {id:"m4-6", type:"single", tag:"評分重點",
+  q:"目標設定與工作計劃表中，哪一欄要涵蓋 PDCA？",
+  choices:["目標 What","目的 Why","達成策略／方法 How","階段目標與檢核點 Check"], answer:2,
+  explain:"評分藍字指出：策略欄（達成策略／方法 How）要涵蓋 PDCA。", src:"目標設定與工作計劃表"},
+ {id:"m4-7", type:"single", tag:"評分重點",
+  q:"目標設定與工作計劃表中，哪一欄要與組織目的方向一致？",
+  choices:["目標 What","目的 Why","達成策略／方法 How","階段目標與檢核點 Check"], answer:1,
+  explain:"評分藍字指出：目的欄要與組織目的方向一致。", src:"目標設定與工作計劃表"},
+ {id:"m4-8", type:"single", tag:"評分重點",
+  q:"工作計劃表的「檢核」欄，每一階段應該要有什麼？",
+  choices:["只要日期就好","只要衡量標準就好","日期＋可衡量標準","負責人姓名"], answer:2,
+  explain:"評分藍字指出：檢核欄每段要有日期＋可衡量標準，缺一不可。", src:"目標設定與工作計劃表"},
+ {id:"m4-9", type:"multi", tag:"評分重點",
+  q:"工作計劃表的「策略」欄要分成哪兩段？（可複選）",
+  choices:["短期目標","長期目標","個人目標","部門目標"], answer:[0,1],
+  explain:"評分藍字指出：策略欄要分「短期目標／長期目標」兩段。", src:"目標設定與工作計劃表"},
+ {id:"m4-10", type:"fill", tag:"默寫",
+  q:"請依序默寫目標設定與工作計劃表的四個欄位名稱（用／分隔）。",
+  answer:"目標What／目的Why／達成策略方法How／階段目標與檢核點Check",
+  alt:["目標／目的／達成策略方法／階段目標與檢核點","What／Why／How／Check","目標/目的/達成策略/方法/檢核","目標、目的、達成策略／方法、階段目標與檢核點"],
+  explain:"四欄依序為：目標 What｜目的 Why｜達成策略／方法 How｜階段目標與檢核點 Check。", src:"目標設定與工作計劃表"}
+];
+
+var M5 = [
+ {id:"m5-1", type:"order", tag:"排序",
+  q:"請將「授權事前準備表」七要項依正確順序排列。",
+  items:["可協助或使用之資源","授權的任務／原因","期待各階段需檢視的頻率／目標","要求規格與標準（包括禁忌）","提醒可能發生的問題","該任務的目標","可自行作主或需要回報的部分"],
+  answer:[1,5,3,6,0,4,2],
+  explain:"七要項依序為：①授權的任務／原因 ②該任務的目標 ③要求規格與標準（含禁忌） ④可自行作主或需要回報的部分 ⑤可協助或使用之資源 ⑥提醒可能發生的問題 ⑦期待各階段需檢視的頻率／目標。", src:"授權事前準備表"},
+ {id:"m5-2", type:"fill", tag:"默寫",
+  q:"授權事前準備表第 2 項的內容是什麼？",
+  answer:"該任務的目標", alt:["該任務目標"],
+  explain:"第 2 項：該任務的目標，且必須符合 SMART。", src:"授權事前準備表"},
+ {id:"m5-3", type:"fill", tag:"默寫",
+  q:"授權事前準備表第 4 項的內容是什麼？",
+  answer:"可自行作主或需要回報的部分",
+  alt:["可自行作主或需要回報的部份"],
+  explain:"第 4 項：可自行作主或需要回報的部分，兩邊都要寫清楚，不能只寫一邊。", src:"授權事前準備表"},
+ {id:"m5-4", type:"fill", tag:"默寫",
+  q:"授權事前準備表第 7 項的內容是什麼？",
+  answer:"期待各階段需檢視的頻率／目標",
+  alt:["期待各階段需檢視的頻率/目標","期待各階段需檢視的頻率和目標"],
+  explain:"第 7 項：期待各階段需檢視的頻率／目標，須符合 SMART，且檢核結果要有助於目標。", src:"授權事前準備表"},
+ {id:"m5-5", type:"match", tag:"配對",
+  q:"請將授權事前準備表的項次與內容配對。",
+  left:["第1項","第3項","第5項","第6項","第7項"],
+  right:["要求規格與標準（包括禁忌）","期待各階段需檢視的頻率／目標","提醒可能發生的問題","授權的任務／原因","可協助或使用之資源"],
+  answer:{"0":3,"1":0,"2":4,"3":2,"4":1},
+  explain:"第1項＝授權的任務／原因；第3項＝要求規格與標準（含禁忌）；第5項＝可協助或使用之資源；第6項＝提醒可能發生的問題；第7項＝期待各階段需檢視的頻率／目標。", src:"授權事前準備表"},
+ {id:"m5-6", type:"order", tag:"排序",
+  q:"請將「授權事後討論」四段依序排列。",
+  items:["給予明確訊息","建立和緩氣氛","三明治法則","授權檢視"],
+  answer:[1,0,3,2],
+  explain:"授權事後討論四段依序為：一、建立和緩氣氛 二、給予明確訊息 三、授權檢視 四、三明治法則。", src:"授權事後討論"},
+ {id:"m5-7", type:"order", tag:"排序",
+  q:"「授權檢視」這一段包含三個子項，請依序排列。",
+  items:["邀請被授權者分享執行過程","說明本次任務的執行成果","授權者分享自己的發現與調整"],
+  answer:[1,0,2],
+  explain:"授權檢視依序為：①說明本次任務的執行成果 ②邀請被授權者分享執行過程 ③授權者分享自己的發現與調整。", src:"授權事後討論"},
+ {id:"m5-8", type:"single", tag:"默寫",
+  q:"三明治法則的正確順序是？",
+  choices:["肯定→再肯定→指出落差","指出落差→肯定→期待","肯定→指出落差→再肯定並給期待","期待→肯定→落差"], answer:2,
+  explain:"三明治法則：肯定 → 指出落差 → 再肯定並給期待。", src:"授權事後討論"},
+ {id:"m5-9", type:"multi", tag:"複選",
+  q:"下列哪些是口試「授權後」的注意事項？（可複選）",
+  choices:["傾聽","邀請分享","具體","檢視成果","三明治法則","不管事實，直接責備"],
+  answer:[0,1,2,3,4],
+  explain:"口試授權後注意事項為：傾聽、邀請分享、具體、檢視成果、三明治法則，且要有事實根據來說話，不能不管事實直接責備。", src:"授權後（口試注意事項）"},
+ {id:"m5-10", type:"single", tag:"情境",
+  q:"情境（阿至案例）：你特別叮嚀「數據例外情況的解讀方式」以及「絕對不能對外公布未經查核的數字」，這屬於授權事前準備表七要項中的第幾項？",
+  choices:["第2項 該任務的目標","第3項 要求規格與標準（含禁忌）","第5項 可協助或使用之資源","第6項 提醒可能發生的問題"], answer:1,
+  explain:"解讀方式與禁忌事項屬於「第3項：要求規格與標準（包括禁忌）」。", src:"授權事前準備表（情境應用）"},
+ {id:"m5-11", type:"fill", tag:"默寫",
+  q:"授權事後討論的提醒重點是什麼？",
+  answer:"要有事實根據來說話", alt:["要有事實根據來說話。"],
+  explain:"授權事後討論提醒：要有事實根據來說話，不能憑印象或情緒指責。", src:"授權事後討論"}
+];
+
+var M6 = [
+ {id:"m6-1", type:"single", tag:"送分題",
+  q:"主管管理技巧檢定的筆試與口試各占多少比重？",
+  choices:["筆試30%、口試70%","筆試50%、口試50%","筆試70%、口試30%","筆試20%、口試80%"], answer:0,
+  explain:"檢定分筆試30%、口試70%。", src:"考試制度與流程"},
+ {id:"m6-2", type:"single", tag:"送分題",
+  q:"整場檢定共多少分鐘？",
+  choices:["60分鐘","95分鐘","120分鐘","90分鐘"], answer:1,
+  explain:"全場檢定共95分鐘。", src:"考試制度與流程"},
+ {id:"m6-3", type:"single", tag:"送分題",
+  q:"筆試的時間與張數是？",
+  choices:["20分鐘、一張單","30分鐘、兩張單","45分鐘、三張單","60分鐘、兩張單"], answer:1,
+  explain:"筆試為30分鐘、兩張單。", src:"考試制度與流程"},
+ {id:"m6-4", type:"multi", tag:"送分題",
+  q:"筆試的兩張單分別是？（可複選）",
+  choices:["目標設定與工作計劃表","授權事前準備表","同仁輔導紀錄表","授權事後討論表"], answer:[0,1],
+  explain:"筆試兩張單為：①目標設定與工作計劃表 ②授權事前準備表。同仁輔導紀錄表、授權事後討論表屬於口試範疇。", src:"考試制度與流程"},
+ {id:"m6-5", type:"single", tag:"送分題",
+  q:"口試的書面準備時間與現場作答時間各是？",
+  choices:["20分鐘＋40分鐘","30分鐘＋30分鐘","15分鐘＋45分鐘","10分鐘＋50分鐘"], answer:1,
+  explain:"口試為30分鐘書面準備＋30分鐘現場。", src:"考試制度與流程"},
+ {id:"m6-6", type:"multi", tag:"送分題",
+  q:"口試包含哪三個部分？（可複選）",
+  choices:["溝通協調","教練教導","授權後","目標設定與工作計劃"], answer:[0,1,2],
+  explain:"口試三部分為：①溝通協調 ②教練教導 ③授權後。目標設定與工作計劃表屬於筆試。", src:"考試制度與流程"},
+ {id:"m6-7", type:"single", tag:"送分題",
+  q:"下列何者「不是」筆試考的兩張單之一？",
+  choices:["目標設定與工作計劃表","授權事前準備表","同仁輔導紀錄表","以上皆是筆試單"], answer:2,
+  explain:"同仁輔導紀錄表屬於口試「教練教導」的範疇，不是筆試單。", src:"考試制度與流程"}
+];
+
+var MODULES = [
+  {id:"m1", seal:"一", name:"溝通協調思考階梯", qs:M1},
+  {id:"m2", seal:"二", name:"同仁輔導紀錄表", qs:M2},
+  {id:"m3", seal:"三", name:"SMART 原則", qs:M3},
+  {id:"m4", seal:"四", name:"PDCA 與工作計劃表", qs:M4},
+  {id:"m5", seal:"五", name:"授權前＋授權後", qs:M5},
+  {id:"m6", seal:"六", name:"考試制度與流程", qs:M6}
+];
+
+/* ============================================================
+   DOM 工具
+   ============================================================ */
+function $(id){ return document.getElementById(id); }
+function clearNode(node){ while(node.firstChild) node.removeChild(node.firstChild); }
+function ce(tag, className, text){
+  var e = document.createElement(tag);
+  if(className) e.className = className;
+  if(text != null) e.textContent = text;
+  return e;
+}
+
+var views = {
+  home: $("view-home"), quiz: $("view-quiz"), result: $("view-result"), sheet: $("view-sheet")
+};
+function showView(name){
+  for(var k in views){ if(views.hasOwnProperty(k)) views[k].hidden = (k !== name); }
+  window.scrollTo(0,0);
+}
+
+/* ============================================================
+   首頁
+   ============================================================ */
+function buildHome(){
+  buildModuleGrid();
+  buildSheetGrid();
+  buildReference();
+}
+
+function buildModuleGrid(){
+  var grid = $("module-grid");
+  clearNode(grid);
+  MODULES.forEach(function(mod){
+    var total = mod.qs.length;
+    var correct = mod.qs.filter(function(q){ return !!progress.everCorrect[q.id]; }).length;
+    var wrongCount = mod.qs.filter(function(q){ return !!progress.wrong[q.id]; }).length;
+
+    var card = ce("div","mod-card");
+    var head = ce("div","mod-head");
+    head.appendChild(ce("span","seal", mod.seal));
+    head.appendChild(ce("h3", null, mod.name));
+    card.appendChild(head);
+    card.appendChild(ce("div","mod-meta", "熟練度　" + correct + " / " + total));
+    if(wrongCount > 0){
+      card.appendChild(ce("div","mod-meta warn", "錯題本：" + wrongCount + " 題"));
+    } else {
+      card.appendChild(ce("div","mod-meta", "目前沒有錯題"));
+    }
+    var actions = ce("div","mod-actions");
+    var btnAll = ce("button","btn primary","開始作答");
+    btnAll.type="button";
+    btnAll.addEventListener("click", function(m){ return function(){ startQuiz(m,"all"); }; }(mod));
+    var btnWrong = ce("button","btn","只重刷錯的");
+    btnWrong.type="button";
+    btnWrong.disabled = wrongCount===0;
+    btnWrong.addEventListener("click", function(m){ return function(){ startQuiz(m,"wrong"); }; }(mod));
+    actions.appendChild(btnAll); actions.appendChild(btnWrong);
+    card.appendChild(actions);
+    grid.appendChild(card);
+  });
+}
+
+var SHEETS = [
+  {id:"sheetC", seal:"C", name:"案例C：目標設定與工作計劃表"},
+  {id:"sheetD1", seal:"D前", name:"案例D：任務授權（事前）"},
+  {id:"sheetD2", seal:"D後", name:"案例D：任務授權（事後）"}
+];
+
+function buildSheetGrid(){
+  var grid = $("sheet-grid");
+  clearNode(grid);
+  SHEETS.forEach(function(sh){
+    var card = ce("div","sheet-card");
+    var head = ce("div","sheet-head");
+    head.appendChild(ce("span","seal", sh.seal));
+    head.appendChild(ce("h3", null, sh.name));
+    card.appendChild(head);
+    card.appendChild(ce("div","mod-meta","可填寫模擬筆試單＋自評檢核表"));
+    var actions = ce("div","mod-actions");
+    var btn = ce("button","btn primary","開始填寫");
+    btn.type="button";
+    btn.addEventListener("click", function(id){ return function(){ openSheet(id); }; }(sh.id));
+    actions.appendChild(btn);
+    card.appendChild(actions);
+    grid.appendChild(card);
+  });
+}
+
+function refTableSection(title, rows, headers){
+  var block = ce("div","ref-block");
+  block.appendChild(ce("h3", null, title));
+  var table = document.createElement("table");
+  table.className = "refTable";
+  var thead = document.createElement("thead");
+  var trh = document.createElement("tr");
+  headers.forEach(function(h){ trh.appendChild(ce("th", null, h)); });
+  thead.appendChild(trh);
+  table.appendChild(thead);
+  var tbody = document.createElement("tbody");
+  rows.forEach(function(row){
+    var tr = document.createElement("tr");
+    row.forEach(function(cell, i){
+      var td = ce("td", null, cell);
+      td.setAttribute("data-th", headers[i]);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  block.appendChild(table);
+  return block;
+}
+
+function buildReference(){
+  var wrap = $("reference");
+  clearNode(wrap);
+
+  wrap.appendChild(refTableSection("SMART 五要素",
+    [["S","Specific","明確具體","要做什麼？對象是誰？改善哪一件事？"],
+     ["M","Measurable","可衡量","用什麼數字或指標判斷有沒有做到？"],
+     ["A","Achievable","可達成","以現有資源、人力與時間，這個標準做得到嗎？"],
+     ["R","Relevant","相關性","和部門／公司的組織目的方向一致嗎？"],
+     ["T","Time-bound","有時限","哪一天完成？中間有沒有階段時點？"]],
+    ["字母","英文","中文","自我檢查問句"]));
+
+  var pdca = ce("div","ref-block");
+  pdca.appendChild(ce("h3", null, "PDCA"));
+  pdca.appendChild(ce("p", null, "P Plan 計劃（訂目標、分析現況、擬定方法與資源）／D Do 執行／C Check 查核（對照階段目標與檢核點）／A Act 行動改善（依落差調整、標準化、納入下一循環）"));
+  wrap.appendChild(pdca);
+
+  var plan = ce("div","ref-block");
+  plan.appendChild(ce("h3", null, "目標設定與工作計劃表（四欄）"));
+  plan.appendChild(ce("p", null, "目標 What｜目的 Why｜達成策略／方法 How｜階段目標與檢核點 Check"));
+  plan.appendChild(ce("p", null, "評分藍字：目標欄要 SMART、目的欄要與組織目的方向一致、策略欄要涵蓋 PDCA、檢核欄每段要有日期＋可衡量標準。策略欄要分「短期目標／長期目標」兩段。"));
+  wrap.appendChild(plan);
+
+  wrap.appendChild(refTableSection("溝通協調思考階梯",
+    [["1","Position","明白自己的位置","我的角色／期望溝通後的結果"],
+     ["2","Empathy","同理心思考","溝通對象／對方擔心及在意／對方期望"],
+     ["3","Values","訊息的價值","溝通重點／內容"],
+     ["4","Interaction","互動的過程","善用同理心溝通／詢問、邀請與引導"]],
+    ["階","英文","中文","關鍵問題"]));
+  var commNote = ce("div","ref-block");
+  commNote.appendChild(ce("p", null, "口試注意事項：傾聽、邀請分享、確認彼此認知、三明治法則。"));
+  wrap.appendChild(commNote);
+
+  wrap.appendChild(refTableSection("同仁輔導紀錄表",
+    [["一","建立和緩的氣氛","先聊近況、給予關心與讚美"],
+     ["二","給予明確的訊息","提供問題事實"],
+     ["三","澄清並確認事實（找原因）","讓對方主動先說，盡可能收集資訊"],
+     ["四","達成共識並確認結果（找方法）","讓對方自己提出解決方案／表達具體支持"],
+     ["五","訂出下次教導時間與主題","下次面談時間＆主題"]],
+    ["步驟","名稱","右側藍字提示"]));
+  var coachNote = ce("div","ref-block");
+  coachNote.appendChild(ce("p", null, "口試注意事項：傾聽、邀請分享、確認彼此認知、三明治法則、確認下次會談時間、同理心、對事不對人。"));
+  wrap.appendChild(coachNote);
+
+  var dele = ce("div","ref-block");
+  dele.appendChild(ce("h3", null, "授權事前準備表（七要項，筆試會考）"));
+  var ol = document.createElement("ol");
+  ["授權的任務／原因","該任務的目標（必須符合 SMART）","要求規格與標準（包括禁忌）","可自行作主或需要回報的部分（兩邊都要寫）","可協助或使用之資源","提醒可能發生的問題","期待各階段需檢視的頻率／目標（SMART，檢核結果有助於目標）"]
+   .forEach(function(t){ ol.appendChild(ce("li", null, t)); });
+  dele.appendChild(ol);
+  wrap.appendChild(dele);
+
+  var deleAfter = ce("div","ref-block");
+  deleAfter.appendChild(ce("h3", null, "授權事後討論（四段）"));
+  var ol2 = document.createElement("ol");
+  ["建立和緩氣氛","給予明確訊息","授權檢視　→①說明本次任務的執行成果 ②邀請被授權者分享執行過程 ③授權者分享自己的發現與調整","三明治法則（肯定 → 指出落差 → 再肯定並給期待）"]
+   .forEach(function(t){ ol2.appendChild(ce("li", null, t)); });
+  deleAfter.appendChild(ol2);
+  deleAfter.appendChild(ce("p", null, "提醒：要有事實根據來說話。口試注意：傾聽、邀請分享、具體、檢視成果、三明治法則。"));
+  wrap.appendChild(deleAfter);
+
+  var examInfo = ce("div","ref-block");
+  examInfo.appendChild(ce("h3", null, "考試制度與流程"));
+  examInfo.appendChild(ce("p", null, "檢定分筆試30%、口試70%，全場95分鐘。筆試（30分鐘、兩張單）：①目標設定與工作計劃表 ②授權事前準備表。口試（30分鐘書面準備＋30分鐘現場）：①溝通協調 ②教練教導 ③授權後。"));
+  wrap.appendChild(examInfo);
+}
+
+/* ============================================================
+   作答元件（依題型渲染／收答／評分）
+   ============================================================ */
+function renderQuestionBody(q, container){
+  clearNode(container);
+  container.dataset.locked = "0";
+  var state = {};
+
+  if(q.type === "single" || q.type === "multi"){
+    state.selected = {};
+    var list = ce("div","choice-list");
+    q.choices.forEach(function(choice, i){
+      var btn = ce("button","choice-btn", choice);
+      btn.type = "button";
+      btn.addEventListener("click", function(){
+        if(container.dataset.locked === "1") return;
+        if(q.type === "single"){
+          state.selected = {};
+          state.selected[i] = true;
+          Array.prototype.forEach.call(list.querySelectorAll(".choice-btn"), function(b){ b.classList.remove("sel"); });
+          btn.classList.add("sel");
+        } else {
+          if(state.selected[i]){ delete state.selected[i]; btn.classList.remove("sel"); }
+          else { state.selected[i] = true; btn.classList.add("sel"); }
+        }
+      });
+      list.appendChild(btn);
+    });
+    container.appendChild(list);
+
+  } else if(q.type === "order"){
+    state.chosen = [];
+    var slots = ce("div","order-slots");
+    var bank = ce("div","order-bank");
+    function refreshOrder(){
+      clearNode(slots);
+      state.chosen.forEach(function(itemIdx, slotPos){
+        var s = ce("button","order-slot filled", (slotPos+1) + ". " + q.items[itemIdx]);
+        s.type = "button";
+        s.addEventListener("click", function(){
+          if(container.dataset.locked === "1") return;
+          state.chosen.splice(slotPos,1);
+          refreshOrder();
+        });
+        slots.appendChild(s);
+      });
+      for(var i=state.chosen.length; i<q.items.length; i++){
+        slots.appendChild(ce("div","order-slot empty", (i+1) + ". ？"));
+      }
+      Array.prototype.forEach.call(bank.querySelectorAll(".order-item"), function(b){
+        var idx = Number(b.getAttribute("data-idx"));
+        b.disabled = state.chosen.indexOf(idx) !== -1;
+      });
+    }
+    q.items.forEach(function(item, i){
+      var b = ce("button","order-item", item);
+      b.type = "button";
+      b.setAttribute("data-idx", String(i));
+      b.addEventListener("click", function(){
+        if(container.dataset.locked === "1") return;
+        if(state.chosen.indexOf(i) !== -1) return;
+        state.chosen.push(i);
+        refreshOrder();
+      });
+      bank.appendChild(b);
+    });
+    container.appendChild(slots);
+    container.appendChild(bank);
+    refreshOrder();
+
+  } else if(q.type === "match"){
+    state.pairs = {};
+    state.activeLeft = null;
+    var wrap2 = ce("div","match-wrap");
+    var leftCol = ce("div","match-col");
+    var rightCol = ce("div","match-col");
+    function refreshMatch(){
+      Array.prototype.forEach.call(leftCol.querySelectorAll(".match-btn"), function(b){
+        var idx = Number(b.getAttribute("data-idx"));
+        b.classList.toggle("active", state.activeLeft === idx);
+        b.classList.toggle("matched", state.pairs.hasOwnProperty(idx));
+      });
+      var usedRight = {};
+      for(var k in state.pairs){ usedRight[state.pairs[k]] = true; }
+      Array.prototype.forEach.call(rightCol.querySelectorAll(".match-btn"), function(b){
+        var idx = Number(b.getAttribute("data-idx"));
+        b.classList.toggle("matched", !!usedRight[idx]);
+      });
+    }
+    q.left.forEach(function(txt, i){
+      var b = ce("button","match-btn", txt);
+      b.type="button"; b.setAttribute("data-idx", String(i));
+      b.addEventListener("click", function(){
+        if(container.dataset.locked === "1") return;
+        if(state.pairs.hasOwnProperty(i)){ delete state.pairs[i]; state.activeLeft=null; refreshMatch(); return; }
+        state.activeLeft = i;
+        refreshMatch();
+      });
+      leftCol.appendChild(b);
+    });
+    q.right.forEach(function(txt, i){
+      var b = ce("button","match-btn", txt);
+      b.type="button"; b.setAttribute("data-idx", String(i));
+      b.addEventListener("click", function(){
+        if(container.dataset.locked === "1") return;
+        if(state.activeLeft === null) return;
+        for(var kk in state.pairs){ if(state.pairs[kk] === i) delete state.pairs[kk]; }
+        state.pairs[state.activeLeft] = i;
+        state.activeLeft = null;
+        refreshMatch();
+      });
+      rightCol.appendChild(b);
+    });
+    wrap2.appendChild(leftCol); wrap2.appendChild(rightCol);
+    container.appendChild(wrap2);
+    refreshMatch();
+
+  } else if(q.type === "fill"){
+    var input = document.createElement("textarea");
+    input.className = "fill-input";
+    input.rows = 2;
+    input.placeholder = "請輸入答案…";
+    container.appendChild(input);
+    state.input = input;
+  }
+  return state;
+}
+
+function gradeQuestion(q, state){
+  if(q.type === "single"){
+    var selKeys = Object.keys(state.selected).map(Number);
+    return selKeys.length === 1 && selKeys[0] === q.answer;
+  }
+  if(q.type === "multi"){
+    var sel = Object.keys(state.selected).map(Number).sort(function(a,b){return a-b;});
+    var ans = q.answer.slice().sort(function(a,b){return a-b;});
+    if(sel.length !== ans.length) return false;
+    for(var i=0;i<sel.length;i++){ if(sel[i] !== ans[i]) return false; }
+    return true;
+  }
+  if(q.type === "order"){
+    if(state.chosen.length !== q.answer.length) return false;
+    for(var j=0;j<q.answer.length;j++){ if(state.chosen[j] !== q.answer[j]) return false; }
+    return true;
+  }
+  if(q.type === "match"){
+    var leftCount = q.left.length;
+    for(var li=0; li<leftCount; li++){
+      if(state.pairs[li] !== q.answer[String(li)]) return false;
+    }
+    return true;
+  }
+  if(q.type === "fill"){
+    return checkFill(q, state.input.value);
+  }
+  return false;
+}
+
+function revealAnswer(q, container, state){
+  container.dataset.locked = "1";
+  if(q.type === "single" || q.type === "multi"){
+    var ansArr = Array.isArray(q.answer) ? q.answer : [q.answer];
+    var ansSet = {};
+    ansArr.forEach(function(a){ ansSet[a]=true; });
+    Array.prototype.forEach.call(container.querySelectorAll(".choice-btn"), function(b,i){
+      var isAns = !!ansSet[i];
+      var isSel = !!state.selected[i];
+      if(isAns) b.classList.add("correct");
+      if(isSel && !isAns) b.classList.add("incorrect");
+      b.disabled = true;
+    });
+  } else if(q.type === "order"){
+    Array.prototype.forEach.call(container.querySelectorAll(".order-slot.filled"), function(b,i){
+      var ok = state.chosen[i] === q.answer[i];
+      b.classList.add(ok ? "correct" : "incorrect");
+    });
+    Array.prototype.forEach.call(container.querySelectorAll(".order-item"), function(b){ b.disabled = true; });
+  } else if(q.type === "match"){
+    Array.prototype.forEach.call(container.querySelectorAll(".match-btn"), function(b){ b.style.pointerEvents = "none"; });
+    var leftBtns = container.querySelectorAll(".match-col")[0].querySelectorAll(".match-btn");
+    Array.prototype.forEach.call(leftBtns, function(b,i){
+      var ok = state.pairs[i] === q.answer[String(i)];
+      b.classList.add(ok ? "correct" : "incorrect");
+    });
+  } else if(q.type === "fill"){
+    state.input.disabled = true;
+    var ok2 = checkFill(q, state.input.value);
+    state.input.classList.add(ok2 ? "correct" : "incorrect");
+  }
+}
+
+function answerSummaryText(q){
+  if(q.type === "single") return q.choices[q.answer];
+  if(q.type === "multi") return q.answer.map(function(i){ return q.choices[i]; }).join("、");
+  if(q.type === "order") return q.answer.map(function(i){ return q.items[i]; }).join(" → ");
+  if(q.type === "match"){
+    var parts = [];
+    q.left.forEach(function(txt,i){ parts.push(txt + "＝" + q.right[q.answer[String(i)]]); });
+    return parts.join("；");
+  }
+  if(q.type === "fill") return q.answer;
+  return "";
+}
+
+/* ============================================================
+   測驗流程
+   ============================================================ */
+var session = null;
+
+function startQuiz(mod, mode){
+  var queue;
+  if(mode === "wrong"){
+    queue = mod.qs.filter(function(q){ return !!progress.wrong[q.id]; });
+    if(queue.length === 0) return;
+  } else {
+    var wrongOnes = mod.qs.filter(function(q){ return !!progress.wrong[q.id]; });
+    var rest = mod.qs.filter(function(q){ return !progress.wrong[q.id]; });
+    queue = wrongOnes.concat(rest);
+  }
+  session = {mod:mod, queue:queue, idx:0, correctCount:0, wrongList:[]};
+  showView("quiz");
+  renderCurrentQuestion();
+}
+
+function startCustomQuiz(mod, queue){
+  if(!queue || queue.length === 0) return;
+  session = {mod:mod, queue:queue, idx:0, correctCount:0, wrongList:[]};
+  showView("quiz");
+  renderCurrentQuestion();
+}
+
+function renderCurrentQuestion(){
+  var q = session.queue[session.idx];
+  $("quiz-progress").textContent = session.mod.name + "　第 " + (session.idx+1) + " / " + session.queue.length + " 題";
+  var qtext = $("quiz-question-text");
+  clearNode(qtext);
+  var tag = ce("span","tag", q.tag || q.type);
+  qtext.appendChild(tag);
+  qtext.appendChild(document.createTextNode(q.q));
+
+  var body = $("quiz-question-body");
+  var state = renderQuestionBody(q, body);
+
+  var explainEl = $("quiz-explain");
+  explainEl.hidden = true;
+  clearNode(explainEl);
+  explainEl.className = "quiz-explain";
+
+  var submitBtn = $("quiz-submit");
+  var nextBtn = $("quiz-next");
+  submitBtn.hidden = false;
+  nextBtn.hidden = true;
+
+  submitBtn.onclick = function(){
+    var ok = gradeQuestion(q, state);
+    revealAnswer(q, body, state);
+    if(ok){
+      progress.everCorrect[q.id] = true;
+      delete progress.wrong[q.id];
+      session.correctCount++;
+    } else {
+      progress.wrong[q.id] = true;
+      session.wrongList.push(q);
+    }
+    saveProgress();
+
+    explainEl.hidden = false;
+    explainEl.className = "quiz-explain " + (ok ? "ok" : "no");
+    explainEl.appendChild(ce("div","verdict", ok ? "答對了" : "答錯了"));
+    if(!ok){
+      explainEl.appendChild(ce("div","ans-line", "正確答案：" + answerSummaryText(q)));
+    }
+    explainEl.appendChild(ce("div","ans-line", q.explain));
+    explainEl.appendChild(ce("div","src", "出處：" + q.src));
+
+    submitBtn.hidden = true;
+    nextBtn.hidden = false;
+  };
+
+  nextBtn.onclick = function(){
+    session.idx++;
+    if(session.idx >= session.queue.length){ finishSession(); }
+    else { renderCurrentQuestion(); }
+  };
+}
+
+function finishSession(){
+  showView("result");
+  var total = session.queue.length;
+  var correct = session.correctCount;
+  $("result-score").textContent = correct + " / " + total;
+
+  var wrap = $("result-wrongwrap");
+  clearNode(wrap);
+  if(session.wrongList.length === 0){
+    wrap.appendChild(ce("p", null, "本次全部答對，太厲害了！"));
+  } else {
+    wrap.appendChild(ce("h3", null, "本次錯題清單"));
+    var ul = ce("ul","wrong-list");
+    session.wrongList.forEach(function(q){
+      ul.appendChild(ce("li", null, "[" + (q.tag||q.type) + "] " + q.q));
+    });
+    wrap.appendChild(ul);
+  }
+
+  var retryWrongBtn = $("result-retry-wrong");
+  retryWrongBtn.disabled = session.wrongList.length === 0;
+  retryWrongBtn.onclick = function(){
+    startCustomQuiz(session.mod, session.wrongList.slice());
+  };
+  $("result-retry-all").onclick = function(){
+    startQuiz(session.mod, "all");
+  };
+  $("result-home").onclick = function(){
+    buildHome();
+    showView("home");
+  };
+
+  buildModuleGrid();
+}
+
+$("quiz-back").addEventListener("click", function(){
+  buildHome();
+  showView("home");
+});
+
+/* ============================================================
+   模擬筆試單
+   ============================================================ */
+function persistField(el, key){
+  if(drafts[key] !== undefined){
+    if(el.type === "checkbox") el.checked = !!drafts[key];
+    else el.value = drafts[key];
+  }
+  var evtName = el.type === "checkbox" ? "change" : "input";
+  el.addEventListener(evtName, function(){
+    drafts[key] = el.type === "checkbox" ? el.checked : el.value;
+    saveDrafts();
+  });
+}
+
+function fieldRow(items){
+  var row = ce("div","field-row");
+  items.forEach(function(item){
+    var label = document.createElement("label");
+    label.appendChild(document.createTextNode(item.label));
+    var input = document.createElement("input");
+    input.type = "text";
+    persistField(input, item.key);
+    label.appendChild(input);
+    row.appendChild(label);
+  });
+  return row;
+}
+
+function formBlock(labelText, hintText, key, rows){
+  var block = ce("div","form-block");
+  block.appendChild(ce("div","label", labelText));
+  if(hintText) block.appendChild(ce("div","hint", hintText));
+  var ta = document.createElement("textarea");
+  ta.rows = rows || 4;
+  persistField(ta, key);
+  block.appendChild(ta);
+  return block;
+}
+
+function checklistBlock(title, items, keyPrefix){
+  var block = ce("div","form-block");
+  block.appendChild(ce("div","label", title));
+  var stat = ce("div","check-stat","");
+  var ul = ce("ul","checklist");
+  function updateStat(){
+    var total = items.length;
+    var checkedCount = Array.prototype.filter.call(ul.querySelectorAll("input"), function(cb){ return cb.checked; }).length;
+    stat.textContent = "已勾選 " + checkedCount + " / " + total;
+  }
+  items.forEach(function(text, i){
+    var li = document.createElement("li");
+    var cb = document.createElement("input");
+    cb.type = "checkbox";
+    persistField(cb, keyPrefix + "-" + i);
+    cb.addEventListener("change", updateStat);
+    li.appendChild(cb);
+    li.appendChild(ce("span", null, text));
+    ul.appendChild(li);
+  });
+  block.appendChild(stat);
+  block.appendChild(ul);
+  updateStat();
+  return block;
+}
+
+function openSheet(id){
+  showView("sheet");
+  var body = $("sheet-body");
+  clearNode(body);
+
+  if(id === "sheetC"){
+    body.appendChild(ce("h2", null, "案例C：目標設定與工作計劃表"));
+    var caseC = ce("div","sheet-case","在 2 個月內於印度市場推出 TeenPatti 上線。");
+    body.appendChild(caseC);
+
+    var grid = ce("div","form-grid");
+    grid.appendChild(formBlock("目標 What","要做什麼？對象是誰？改善哪一件事？（須符合 SMART）","sheetC-what",4));
+    grid.appendChild(formBlock("目的 Why","與部門／公司的組織目的方向是否一致？","sheetC-why",4));
+    grid.appendChild(formBlock("達成策略／方法 How（短期目標）","短期內要採取的具體做法","sheetC-how-short",4));
+    grid.appendChild(formBlock("達成策略／方法 How（長期目標）","長期要採取的具體做法（整體須涵蓋 PDCA）","sheetC-how-long",4));
+    body.appendChild(grid);
+    body.appendChild(formBlock("階段目標與檢核點 Check","每一階段是否都有日期＋可衡量標準？","sheetC-check",5));
+
+    body.appendChild(checklistBlock("寫完再看：自評檢核表", [
+      "目標欄是否明確具體（S）——寫出要做什麼、對象是誰",
+      "目標欄是否可衡量（M）——有具體數字或指標",
+      "目標欄是否可達成（A）——以現有資源人力時間合理",
+      "目標欄是否與組織目的方向一致（R）",
+      "目標欄是否有明確時限（T）",
+      "目的欄是否清楚說明與組織目的方向一致",
+      "策略欄是否有分「短期目標」與「長期目標」兩段",
+      "策略欄整體是否涵蓋 PDCA（計劃／執行／查核／行動改善）",
+      "檢核欄每一階段是否都有日期",
+      "檢核欄每一階段是否都有可衡量的標準"
+    ], "checkC"));
+
+  } else if(id === "sheetD1"){
+    body.appendChild(ce("h2", null, "案例D：任務授權（事前）"));
+    var caseD1 = ce("div","sheet-case","阿至是企劃部門同仁，細心認真負責、手上工作已很熟練。你希望請他整理遊戲指定數據資料月報與報告，讓他從工作中學習整理資料的步驟與觀念。報告需含指定數據、漲跌幅、原因、圖表，再以口頭方式說明。今天 8/3，希望 8/24 完成。");
+    body.appendChild(caseD1);
+
+    body.appendChild(fieldRow([
+      {label:"授權主題", key:"sheetD1-topic"},
+      {label:"授權者", key:"sheetD1-grantor"},
+      {label:"被授權者", key:"sheetD1-grantee"},
+      {label:"授權日期", key:"sheetD1-date"},
+      {label:"地點", key:"sheetD1-place"}
+    ]));
+
+    var items7 = [
+      ["1. 授權的任務／原因","sheetD1-1"],
+      ["2. 該任務的目標（必須符合 SMART）","sheetD1-2"],
+      ["3. 要求規格與標準（包括禁忌）","sheetD1-3"],
+      ["4. 可自行作主或需要回報的部分（兩邊都要寫）","sheetD1-4"],
+      ["5. 可協助或使用之資源","sheetD1-5"],
+      ["6. 提醒可能發生的問題","sheetD1-6"],
+      ["7. 期待各階段需檢視的頻率／目標（SMART，檢核結果有助於目標）","sheetD1-7"]
+    ];
+    items7.forEach(function(pair){ body.appendChild(formBlock(pair[0], null, pair[1], 3)); });
+
+    body.appendChild(checklistBlock("寫完再看：自評檢核表", [
+      "是否寫出授權任務與原因",
+      "該任務目標是否符合 SMART",
+      "要求規格與標準是否包含禁忌事項",
+      "是否同時寫了「可自行作主」的部分",
+      "是否同時寫了「需要回報」的部分",
+      "是否寫出可協助或使用之資源",
+      "是否提醒可能發生的問題",
+      "檢視頻率／目標是否符合 SMART",
+      "檢核結果是否有助於目標達成",
+      "授權主題等表頭資訊是否填寫完整"
+    ], "checkD1"));
+
+  } else if(id === "sheetD2"){
+    body.appendChild(ce("h2", null, "案例D：任務授權（事後）"));
+    var caseD2 = ce("div","sheet-case","報告架構清晰、脈絡完整，但講解過於密集導致部分細節無法深入；術語與英文縮寫太多造成理解門檻；結論可更從管理者角度出發。");
+    body.appendChild(caseD2);
+
+    body.appendChild(fieldRow([
+      {label:"授權主題", key:"sheetD2-topic"},
+      {label:"被授權者", key:"sheetD2-grantee"},
+      {label:"討論日期", key:"sheetD2-date"}
+    ]));
+
+    body.appendChild(formBlock("溝通內容","依序寫出：建立和緩氣氛 → 給予明確訊息 → 授權檢視（成果／過程／發現與調整）→ 三明治法則（肯定→指出落差→再肯定並給期待），並要有事實根據來說話。","sheetD2-content",10));
+
+    body.appendChild(checklistBlock("寫完再看：自評檢核表", [
+      "是否先建立和緩氣氛",
+      "是否給予明確訊息（問題事實）",
+      "是否說明本次任務的執行成果",
+      "是否邀請被授權者分享執行過程",
+      "是否分享授權者自己的發現與調整",
+      "是否運用三明治法則先肯定",
+      "是否具體指出落差",
+      "是否再肯定並給予期待",
+      "是否有事實根據來說話",
+      "是否針對「講解過密／術語過多／結論角度」三個問題具體回應"
+    ], "checkD2"));
+  }
+}
+
+$("sheet-back").addEventListener("click", function(){
+  buildHome();
+  showView("home");
+});
+
+/* ============================================================
+   重設進度
+   ============================================================ */
+$("btn-reset").addEventListener("click", function(){
+  if(!window.confirm("確定要重設所有作答進度與模擬筆試單內容嗎？此動作無法復原。")) return;
+  progress = {everCorrect:{}, wrong:{}};
+  drafts = {};
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  try{ localStorage.removeItem(DRAFT_KEY); }catch(e){}
+  buildHome();
+  showView("home");
+});
+
+/* ============================================================
+   啟動
+   ============================================================ */
+buildHome();
+showView("home");
+
+})();
+</script>
+</body>
+</html>
